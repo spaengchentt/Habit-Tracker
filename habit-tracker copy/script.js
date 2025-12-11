@@ -8,6 +8,7 @@ let currentUser = null;
 let habits = [];      // Array mit Habit-Objekten aus Supabase
 let history = {};     // { habitName: { "dd.mm.": true/false } }
 
+
 // ---------- AUTH ELEMENTE ----------
 const emailInput = document.getElementById("email");
 const passwordInput = document.getElementById("password");
@@ -298,3 +299,4 @@ button.addEventListener("click", async function () {
 // ---------- INITIAL (wenn nicht eingeloggt, leere UI) ----------
 loadHabitList();
 loadHistoryTable();
+
