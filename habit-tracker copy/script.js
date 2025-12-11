@@ -1,5 +1,8 @@
 // ---------- SUPABASE CLIENT ----------
-const supa = supabaseClient;
+const supabaseUrl = 'https://bsmgrdhsuzzmsczyazms.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzbWdyZGhzdXp6bXNjenlhem1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0ODE2OTcsImV4cCI6MjA4MTA1NzY5N30.8V3u9tazScrkxQVsKiXg2EFGTCfyM-YFr4X-o-XOI5M';
+
+const supa = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
 let currentUser = null;
 let habits = [];      // Array mit Habit-Objekten aus Supabase
@@ -19,10 +22,11 @@ signupBtn.addEventListener("click", async () => {
   if (!email || !password) return;
 
   const { data, error } = await supa.auth.signUp({ email, password });
+  console.log("signUp result:", data, error);
   if (error) {
     alert("Fehler bei Registrierung: " + error.message);
   } else {
-    alert("Bestätige ggf. deine E-Mail.");
+    alert("Registrierung ok. Jetzt mit E-Mail und Passwort einloggen.");
   }
 });
 
@@ -32,10 +36,13 @@ loginBtn.addEventListener("click", async () => {
   if (!email || !password) return;
 
   const { data, error } = await supa.auth.signInWithPassword({ email, password });
+  console.log("signIn result:", data, error);
+
   if (error) {
     alert("Login fehlgeschlagen: " + error.message);
   } else {
     currentUser = data.user;
+    alert("Login erfolgreich!");
     await loadAllData();
   }
 });
@@ -51,10 +58,14 @@ logoutBtn.addEventListener("click", async () => {
 
 // Beim Laden prüfen, ob bereits eingeloggt
 (async function initAuth() {
-  const { data } = await supa.auth.getUser();
+  const { data, error } = await supa.auth.getUser();
+  console.log("getUser:", data, error);
   currentUser = data.user || null;
   if (currentUser) {
     await loadAllData();
+  } else {
+    loadHabitList();
+    loadHistoryTable();
   }
 })();
 
@@ -105,12 +116,14 @@ async function loadAllData() {
     .select("*")
     .order("created_at");
 
+  console.log("habits load:", habitRows, habitsError);
+
   if (habitsError) {
     console.error(habitsError);
     return;
   }
 
-  habits = habitRows.map(h => h); // komplette Objekte
+  habits = habitRows || [];
   history = {};
 
   // History der letzten 30 Tage laden
@@ -123,6 +136,8 @@ async function loadAllData() {
     .select("*")
     .gte("date", from)
     .lte("date", to);
+
+  console.log("history load:", histRows, histError);
 
   if (!histError && histRows) {
     histRows.forEach(row => {
@@ -247,7 +262,12 @@ const button = document.getElementById("addhabitbtn");
 
 button.addEventListener("click", async function () {
   const newHabit = input.value.trim();
-  if (!newHabit || !currentUser) return;
+  if (!newHabit) return;
+
+  if (!currentUser) {
+    alert("Bitte zuerst einloggen.");
+    return;
+  }
 
   if (habits.some(h => h.name === newHabit)) {
     alert("Diese Gewohnheit existiert bereits!");
@@ -259,6 +279,8 @@ button.addEventListener("click", async function () {
     .insert({ name: newHabit })
     .select()
     .single();
+
+  console.log("insert habit:", data, error);
 
   if (error) {
     console.error(error);
@@ -273,6 +295,6 @@ button.addEventListener("click", async function () {
   input.value = "";
 });
 
-// ---------- INITIAL (ohne Login keine Daten) ----------
+// ---------- INITIAL (wenn nicht eingeloggt, leere UI) ----------
 loadHabitList();
 loadHistoryTable();
