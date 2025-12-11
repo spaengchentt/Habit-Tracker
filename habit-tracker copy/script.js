@@ -2,12 +2,11 @@
 const supabaseUrl = 'https://bsmgrdhsuzzmsczyazms.supabase.co';
 const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJzbWdyZGhzdXp6bXNjenlhem1zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU0ODE2OTcsImV4cCI6MjA4MTA1NzY5N30.8V3u9tazScrkxQVsKiXg2EFGTCfyM-YFr4X-o-XOI5M';
 
-const supa = window.supabase.createClient(supabaseUrl, supabaseAnonKey);  // <- DAS MUSS REIN
+const supa = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
 
 let currentUser = null;
-let habits = [];
-let history = {};
-
+let habits = [];      // Array mit Habit-Objekten aus Supabase
+let history = {};     // { habitName: { "dd.mm.": true/false } }
 
 // ---------- AUTH ELEMENTE ----------
 const emailInput = document.getElementById("email");
@@ -299,7 +298,5 @@ button.addEventListener("click", async function () {
 // ---------- INITIAL (wenn nicht eingeloggt, leere UI) ----------
 loadHabitList();
 loadHistoryTable();
-
-
 
 
